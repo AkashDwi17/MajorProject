@@ -6,8 +6,9 @@ const listingSchema = new Schema({
         type: String,
         required: true,
     },
-    discription: String,
     
+    discription: String,
+
     image: {   //mongoose - Schema - virtual - get/set  - use set
         type: String,
         default: // image ka option hi nahi set kia hua hai
@@ -20,6 +21,7 @@ const listingSchema = new Schema({
     location: String,
     country: String,
 });
+
 
 const Listing = mongoose.model("Listing", listingSchema);
 module.exports = Listing;
