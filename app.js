@@ -1,3 +1,4 @@
+
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose"); // connect with database
@@ -6,6 +7,8 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require("./utils/wrapAsync.js");
 const ExpressError = require("./utils/ExpressError.js");
+const { listingSchema } = require("./schema.js");
+
 
 // Commented out the line that causes the error
 // const sampleListings = require("../init/data.js");
@@ -39,8 +42,22 @@ app.get("/", (req, res) => {
   res.send("Hi, I am root");
 });
 
+// const validateListing = (req, res, next) => {
+//   const { error } = listingSchema.validate(req.body);
+//   if (error) {
+//     // Extract error messages and join them into a single string
+//     const errMsg = error.details.map((el) => el.message).join(", ");
+//     // Throw a custom ExpressError with status 400 and the error message
+//     throw new ExpressError(400, errMsg);
+//   } else {
+//     // Proceed to the next middleware if validation passes
+//     next();
+//   }
+// };
+
+
 // Index Route
-app.get("/listings", wrapAsync (async (req, res) => {
+app.get("/listings",  wrapAsync (async (req, res) => {
   const allListings = await Listing.find({});
   res.render("listings/index.ejs", { allListings });
 }));
@@ -58,31 +75,30 @@ app.get("/listings/:id", wrapAsync (async (req, res) => {
   res.render("listings/show.ejs", { listing });
 }));
 
+
 // Create Route
-app.post("/listings", wrapAsync (async (req, res) => {
-  if(!req.body.listing){
-    throw new ExpressError(400, "Send valid data for listing");
-  }
+app.post("/listings", wrapAsync(async (req, res) => {
   const newListing = new Listing(req.body.listing);
   await newListing.save();
   res.redirect("/listings");
 }));
 
+
 //Edit Route
-app.get("/listings/:id/edit", wrapAsync (async (req, res) => {
+app.get("/listings/:id/edit",  wrapAsync (async (req, res) => {
   const listing = await Listing.findById(req.params.id);
   res.render("listings/edit.ejs", { listing });
 }));
 
 
 //Update Route
-app.put("/listings/:id", wrapAsync (async (req, res) => {
+app.put("/listings/:id",  wrapAsync (async (req, res) => {
   if(!req.body.listing){
     throw new ExpressError(400, "Send valid data for listing");
   }
   let { id } = req.params;
   await Listing.findByIdAndUpdate(id, { ...req.body.listing });  
-  res.redirect(`/listings/${id}`);  
+  res.redirect(`/listings/${id}`);
 }));
 
 
@@ -118,9 +134,9 @@ app.all("*", (req, res, next) => {
 
 
 // Error handling middleware
-app.use((err, req, res, next)=>{
-  let {statusCode=500, message="Something went wrong"} = err;
-  res.status (statusCode).send (message);
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message = "Something went wrong" } = err;
+  res.status(statusCode).render("error.ejs", { message });
 });
 
 // Start the server
