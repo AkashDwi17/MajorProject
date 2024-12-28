@@ -75,7 +75,7 @@ app.get("/listings/:id", wrapAsync (async (req, res) => {
   res.render("listings/show.ejs", { listing });
 }));
 
-
+ 
 // Create Route
 app.post("/listings", wrapAsync(async (req, res) => {
   const newListing = new Listing(req.body.listing);
