@@ -5,6 +5,9 @@ const mongoose = require("mongoose"); // connect with database
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
+const session = require('express-session');
+const flash = require('connect-flash');
+
 
 
 const listings = require("./routes/listing.js");
@@ -34,6 +37,17 @@ app.use(methodOverride("_method"));
 app.engine('ejs', ejsMate);
 app.use(express.static (path.join(__dirname, "/public")));
 
+const sessionOptions = {
+  secret: "mysupersecretcode", // Use a secure secret in production
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    httpOnly: true,
+    expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 1 week
+    maxAge: 1000 * 60 * 60 * 24 * 7,
+  }
+};
+
 
 // Root route
 app.get("/", (req, res) => {
@@ -41,8 +55,20 @@ app.get("/", (req, res) => {
 });
 
 
+app.use(session(sessionOptions));
+app.use(flash());
+
+
+app.use((req, res, next) => {
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  next();
+});
+
+
 app.use("/listings", listings);
 app.use("/listings/:id/reviews", reviews);
+
 
 
 app.all("*", (req, res, next) => {
@@ -60,3 +86,6 @@ app.use((err, req, res, next) => {
 app.listen(8080, () => {
   console.log("Server is listening to port 8080");
 });
+
+
+
