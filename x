@@ -1,43 +1,24 @@
-const cookieParser = require('cookie-parser');
+const express = require("express");
+const router = express.Router();
+const wrapAsync = require("../utils/wrapAsync.js");
+const User = require("../models/user.js");
 
+router.get("/signup", (req, res) => {
+    res.render("users/signup.ejs");
+});
 
+router.post("/signup", wrapAsync(async (req, res) => {
+    try {
+        let { username, email, password } = req.body;
+        const newUser = new User({ email, username });
+        const registeredUser = await User.register(newUser, password);
+        console.log(registeredUser);
+        req.flash("success", "Welcome to WanderLust");
+        res.redirect("/listings");
+    } catch (e) {
+        req.flash("error", e.message);
+        res.redirect("/signup");
+    }
+}));
 
-// Middleware for parsing cookies with a secret key for signed cookies
-// app.use(cookieParser("secretcode"));
-
-// // Route to set a signed cookie
-// app.get("/getSignedCookie", (req, res) => {
-//     res.cookie("made-in", "India", { signed: true });
-//     res.send("Signed cookie has been set.");
-// });
-
-// app.get("/verify", (req, res) => {
-//     console.log(req.signedCookies);
-//     res.send("Verified signed cookie.");
-// });
-// // Route to set regular cookies
-// app.get("/getCookie", (req, res) => {
-//     res.cookie("greet", "namaste");
-//     res.cookie("madeIn", "India");
-//     res.send("Sent you some cookies");
-// });
-
-// // Define cookies
-// app.get("/greet", (req, res) => {
-//     let { name = "anonymous" } = req.cookies;
-//     res.send(`Hello ${name}`);
-// });
-
-// // Root route to display cookies
-// app.get('/', (req, res) => {
-//     console.dir(req.cookies);
-//     res.send('Hello root!');
-// });
-
-// // Users
-// app.use('/users', users);
-
-// // Posts
-// app.use('/posts', posts);
-listings
-alert-heading
+module.exports = router;
