@@ -17,23 +17,10 @@ async function main() {
 }
 
 const initDB = async () => {
-  try {
-    // Preprocess data to ensure `image` is a string
-    const preprocessedData = initData.data.map((listing) => {
-      if (typeof listing.image === "object" && listing.image.url) {
-        listing.image = listing.image.url; // Use the `url` property as the image value
-      }
-      return listing;
-    });
-
     await Listing.deleteMany({});
-    await Listing.insertMany(preprocessedData);
-    console.log("data was initialized");
-  } catch (err) {
-    console.error("Error initializing data:", err);
-  } finally {
-    mongoose.connection.close();
-  }
-};
+    initData.data = initData.data.map((obj) => ({...obj, owner: "67767192f4debefc25ae8c40"}));
+    await Listing.insertMany(initData.data);
+    console.log("Data was initialized");
+} ; 
 
 initDB();

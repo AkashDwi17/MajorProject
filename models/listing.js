@@ -8,9 +8,9 @@ const listingSchema = new Schema({
         required: true,
     },
     
-    discription: String,
+    description: String,
 
-    image: {   //mongoose - Schema - virtual - get/set  - use set
+    image: {   
         type: String,
         default: // image ka option hi nahi set kia hua hai
 
@@ -29,7 +29,11 @@ const listingSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: "Review",
         }
-    ]
+    ],
+    owner: {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+    },
 });
 
 listingSchema.post("findOneAndDelete", async  (listing) => {
