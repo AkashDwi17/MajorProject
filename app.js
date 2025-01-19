@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config(); // to use .env file
+}
+
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose"); // connect with database
@@ -6,6 +10,7 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const ExpressError = require("./utils/ExpressError.js");
 const session = require('express-session');
+const MongoStore = require('connect-mongo');
 const flash = require('connect-flash');
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
@@ -16,7 +21,8 @@ const reviewRouter = require("./routes/review.js");
 const userRouter = require("./routes/user.js");
 
 
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust"; // MongoDB URL from mongoose
+const dbUrl = process.env.ATLASDB_URL;
+
 
 main()
   .then(() => {
@@ -27,7 +33,7 @@ main()
   });
 
 async function main() { // to connect with database
-  await mongoose.connect(MONGO_URL);
+  await mongoose.connect(dbUrl);
 }
 
 app.set("view engine", "ejs");
@@ -37,8 +43,21 @@ app.use(methodOverride("_method"));
 app.engine('ejs', ejsMate);
 app.use(express.static(path.join(__dirname, "/public")));
 
+const store = MongoStore.create({
+  mongoUrl: dbUrl,
+  crypto: {
+    secret: process.env.SECRET,
+  },
+  touchAfter: 24 * 3600,
+});
+
+store.on("error", () => {
+  console.log("ERROR IN MONGO SESSION STORE", err);
+});
+
 const sessionOptions = {
-  secret: "mysupersecretcode", // Use a secure secret in production
+  store,
+  secret: process.env.SECRET, // Use a secure secret in production
   resave: false,
   saveUninitialized: true,
   cookie: {
@@ -47,11 +66,6 @@ const sessionOptions = {
     maxAge: 1000 * 60 * 60 * 24 * 7,
   }
 };
-
-// Root route
-app.get("/", (req, res) => {
-  res.send("Hi, I am root");
-});
 
 
 app.use(session(sessionOptions));
@@ -73,7 +87,6 @@ app.use((req, res, next) => {
 });
 
 
-
 app.use("/listings", listingRouter);
 app.use("/listings/:id/reviews", reviewRouter);
 app.use("/", userRouter);
@@ -92,4 +105,4 @@ app.use((err, req, res, next) => {
 // Start the server
 app.listen(8080, () => {
   console.log("Server is listening to port 8080");
-});
+}); 
