@@ -24,30 +24,6 @@ const userRouter = require("./routes/user.js");
 const dbUrl = process.env.ATLASDB_URL;
 
 
-const crypto = require("crypto");
-
-// Function to validate the signature
-function validateSignature(stringToSign, providedSignature, secretKey) {
-  const expectedSignature = crypto
-    .createHmac("sha256", secretKey)
-    .update(stringToSign)
-    .digest("hex");
-
-  return providedSignature === expectedSignature;
-}
-
-// Example usage
-const stringToSign = "folder=wanderlust_DEV&timestamp=1737340434";
-const providedSignature = "465b7364512f7718ff51c9efefadf94482e69414"; // From client
-const secretKey = process.env.SECRET; // Your server's secret key
-
-if (!validateSignature(stringToSign, providedSignature, secretKey)) {
-  console.log("Invalid Signature");
-} else {
-  console.log("Signature Validated Successfully");
-}
-
-
 main()
   .then(() => {
     console.log("connected to DB");
